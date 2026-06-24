@@ -1,0 +1,9 @@
+{
+  "dataset": "HDSD",
+  "model": "openai/whisper-small",
+  "train_samples": 1633,
+  "val_samples": 159,
+  "test_samples": 210,
+  "wer_baseline": 1.3995584988962473,
+  "cer_baseline": 1.0808835741571168
+}
