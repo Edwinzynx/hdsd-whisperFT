@@ -1,6 +1,9 @@
 {
   "dataset": "HDSD",
   "model": "openai/whisper-small",
+  "language": "Hindi",
+  "microphone": "M2",
+  "normalization": "ei→e, ii→i",
   "train_samples": 1633,
   "val_samples": 159,
   "test_samples": 210,
