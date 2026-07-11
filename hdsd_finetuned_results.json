@@ -1,0 +1,19 @@
+{
+  "dataset": "HDSD",
+  "model": "openai/whisper-small",
+  "language": "Hindi",
+  "microphone": "M2",
+  "normalization": "ei\u2192e, ii\u2192i",
+  "train_samples": 1633,
+  "val_samples": 159,
+  "test_samples": 210,
+  "wer_baseline": 1.3995584988962473,
+  "cer_baseline": 1.0808835741571168,
+  "wer_finetuned": 0.0235467255334805,
+  "cer_finetuned": 0.018767646570337155,
+  "wer_improvement_percent": 98.31756046267087,
+  "cer_improvement_percent": 98.26367547633681,
+  "best_validation_wer": 0.08208208208208208,
+  "best_checkpoint": "./whisper-small-hdsd\\checkpoint-1200",
+  "epochs_trained": 14.990814451928966
+}
