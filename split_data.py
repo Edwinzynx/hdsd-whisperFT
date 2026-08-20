@@ -1,30 +1,38 @@
+import os
 import pandas as pd
-from sklearn.model_selection import GroupShuffleSplit
+from sklearn.model_selection import train_test_split
 
-df = pd.read_csv("hdsd_manifest.csv")
+BASE = os.path.dirname(os.path.abspath(__file__))
+df = pd.read_csv(os.path.join(BASE, "hdsd_manifest.csv"))
 
-# use only dysarthric speakers for training/eval
+# Filter out controls completely
 dysarthric = df[df["is_control"] == False].copy()
 print(f"Dysarthric utterances: {len(dysarthric)}, speakers: {dysarthric['subject_id'].nunique()}")
 
-# 70% train, 15% val, 15% test — split by speaker, not utterance
-gss = GroupShuffleSplit(n_splits=1, test_size=0.30, random_state=42)
-train_idx, temp_idx = next(gss.split(dysarthric, groups=dysarthric["subject_id"]))
+# Sentence-independent split based on sentence_id
+unique_sentences = sorted(dysarthric["sentence_id"].unique())
+print(f"Unique sentence IDs: {len(unique_sentences)}")
 
-train_df = dysarthric.iloc[train_idx]
-temp_df  = dysarthric.iloc[temp_idx]
+train_sentences, temp_sentences = train_test_split(
+    unique_sentences,
+    test_size=0.30,
+    random_state=42
+)
+val_sentences, test_sentences = train_test_split(
+    temp_sentences,
+    test_size=0.50,
+    random_state=42
+)
 
-gss2 = GroupShuffleSplit(n_splits=1, test_size=0.50, random_state=42)
-val_idx, test_idx = next(gss2.split(temp_df, groups=temp_df["subject_id"]))
+train_df = dysarthric[dysarthric["sentence_id"].isin(train_sentences)].reset_index(drop=True)
+val_df   = dysarthric[dysarthric["sentence_id"].isin(val_sentences)].reset_index(drop=True)
+test_df  = dysarthric[dysarthric["sentence_id"].isin(test_sentences)].reset_index(drop=True)
 
-val_df  = temp_df.iloc[val_idx]
-test_df = temp_df.iloc[test_idx]
+print(f"\nTrain: {len(train_df)} utterances ({train_df['subject_id'].nunique()} speakers, {len(train_sentences)} sentences)")
+print(f"Val:   {len(val_df)} utterances ({val_df['subject_id'].nunique()} speakers, {len(val_sentences)} sentences)")
+print(f"Test:  {len(test_df)} utterances ({test_df['subject_id'].nunique()} speakers, {len(test_sentences)} sentences)")
 
-print(f"\nTrain: {train_df['subject_id'].nunique()} speakers, {len(train_df)} utterances")
-print(f"Val:   {val_df['subject_id'].nunique()} speakers, {len(val_df)} utterances")
-print(f"Test:  {test_df['subject_id'].nunique()} speakers, {len(test_df)} utterances")
-
-train_df.to_csv("train.csv", index=False)
-val_df.to_csv("val.csv",   index=False)
-test_df.to_csv("test.csv", index=False)
+train_df.to_csv(os.path.join(BASE, "train.csv"), index=False)
+val_df.to_csv(os.path.join(BASE, "val.csv"), index=False)
+test_df.to_csv(os.path.join(BASE, "test.csv"), index=False)
 print("\nSaved train.csv, val.csv, test.csv")

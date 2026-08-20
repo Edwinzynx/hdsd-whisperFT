@@ -1,5 +1,7 @@
 import os
+import random
 import pandas as pd
+from sklearn.model_selection import train_test_split
 from indic_transliteration import sanscript
 from indic_transliteration.sanscript import transliterate
 
@@ -166,11 +168,85 @@ for speaker in sorted(os.listdir(AUDIO_ROOT)):
 
 df = pd.DataFrame(records)
 
-print(f"\n--- Dataset Summary ---")
-print(f"Total utterances     : {len(df)}")
-print(f"Control speakers     : {df[df['is_control']]['subject_id'].nunique()}")
-print(f"Dysarthric speakers  : {df[~df['is_control']]['subject_id'].nunique()}")
-print(f"Missing transcripts  : {(df['transcript'] == '').sum()}")
+# Filter out controls completely
+dysarthric = df[df["is_control"] == False].copy()
 
+# Filter out empty/NaN transcripts
+dysarthric = dysarthric[dysarthric["transcript"].notna() & (dysarthric["transcript"].str.strip() != "")].reset_index(drop=True)
+
+print(f"\nTotal records: {len(df)}")
+print(f"Controls and empty records filtered out. Remaining dysarthric records: {len(dysarthric)}")
+
+# Split unique speakers (speaker-independent)
+unique_speakers = sorted(dysarthric["subject_id"].unique())
+train_speakers, temp_speakers = train_test_split(
+    unique_speakers,
+    test_size=0.30,
+    random_state=42
+)
+val_speakers, test_speakers = train_test_split(
+    temp_speakers,
+    test_size=0.50,
+    random_state=42
+)
+
+# Split unique sentences (sentence-independent)
+unique_sentences = sorted(dysarthric["sentence_id"].unique())
+train_sentences, temp_sentences = train_test_split(
+    unique_sentences,
+    test_size=0.30,
+    random_state=42
+)
+val_sentences, test_sentences = train_test_split(
+    temp_sentences,
+    test_size=0.50,
+    random_state=42
+)
+
+# Filter splits by BOTH speaker and sentence (dual-independent)
+train_df = dysarthric[dysarthric["subject_id"].isin(train_speakers) & dysarthric["sentence_id"].isin(train_sentences)].reset_index(drop=True)
+val_df   = dysarthric[dysarthric["subject_id"].isin(val_speakers) & dysarthric["sentence_id"].isin(val_sentences)].reset_index(drop=True)
+test_df  = dysarthric[dysarthric["subject_id"].isin(test_speakers) & dysarthric["sentence_id"].isin(test_sentences)].reset_index(drop=True)
+
+print(f"Train utterances: {len(train_df)}")
+print(f"Val utterances:   {len(val_df)}")
+print(f"Test utterances:  {len(test_df)}")
+
+# Verify zero leakage in speakers
+overlap_spk_tv = set(train_df["subject_id"]) & set(val_df["subject_id"])
+overlap_spk_tt = set(train_df["subject_id"]) & set(test_df["subject_id"])
+assert len(overlap_spk_tv) == 0, f"Speaker leakage train-val: {overlap_spk_tv}"
+assert len(overlap_spk_tt) == 0, f"Speaker leakage train-test: {overlap_spk_tt}"
+
+# Verify zero leakage in sentences
+overlap_se_tv = set(train_df["sentence_id"]) & set(val_df["sentence_id"])
+overlap_se_tt = set(train_df["sentence_id"]) & set(test_df["sentence_id"])
+assert len(overlap_se_tv) == 0, f"Sentence leakage train-val: {overlap_se_tv}"
+assert len(overlap_se_tt) == 0, f"Sentence leakage train-test: {overlap_se_tt}"
+
+print("Zero speaker leakage & Zero sentence leakage verified successfully!")
+
+# Save splits to root directory
+train_df.to_csv(os.path.join(BASE, "train.csv"), index=False)
+val_df.to_csv(os.path.join(BASE, "val.csv"), index=False)
+test_df.to_csv(os.path.join(BASE, "test.csv"), index=False)
+
+# Copy to hdsd_*.csv files for notebook compatibility
+train_df.to_csv(os.path.join(BASE, "hdsd_train.csv"), index=False)
+val_df.to_csv(os.path.join(BASE, "hdsd_val.csv"), index=False)
+test_df.to_csv(os.path.join(BASE, "hdsd_test.csv"), index=False)
+
+# Also save the updated hdsd_manifest.csv
 df.to_csv(os.path.join(BASE, "hdsd_manifest.csv"), index=False)
-print("\nSaved to hdsd_manifest.csv")
+
+# Save speaker_split.json to keep it aligned
+speaker_split = {
+    "train_speakers": sorted(list(train_speakers)),
+    "val_speakers": sorted(list(val_speakers)),
+    "test_speakers": sorted(list(test_speakers))
+}
+import json
+with open(os.path.join(BASE, "speaker_split.json"), "w") as f:
+    json.dump(speaker_split, f, indent=2)
+
+print("\nAll datasets split and saved successfully!")

@@ -11,6 +11,7 @@ Exit code 0 = all executed checks passed.
 """
 
 import os, re, sys, time, wave
+sys.stdout.reconfigure(encoding='utf-8')
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
