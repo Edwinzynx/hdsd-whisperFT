@@ -224,7 +224,7 @@ Stores:
 ## Installation
 
 ```bash
-git clone https://github.com/<username>/hdsd-whisperFT.git
+git clone https://github.com/Edwinzynx/hdsd-whisperFT.git
 
 cd hdsd-whisperFT
 
