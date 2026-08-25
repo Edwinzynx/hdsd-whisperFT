@@ -27,18 +27,17 @@ Configuration used:
 - Language: Hindi
 - Microphone: M2 (close-talk microphone)
 - Normalization:
-  - `ei → e`
-  - `ii → i`
+  - Static 100% accurate Hinglish-to-Devanagari mapping dictionary (`FIXED_WORD_MAP` mapping 128 unique Hinglish words) to restore correct standard Hindi spelling and prevent vowel truncation/corrupted transcripts.
 
 Dataset split:
 
 | Split | Samples |
 |--------|---------:|
-| Train | 1633 |
-| Validation | 159 |
-| Test | 210 |
+| Train | 899 |
+| Validation | 44 |
+| Test | 45 |
 
-A **speaker-independent split** was used to ensure speakers in the test set were never seen during training.
+A **Dual-Independent Split** (disjoint speakers AND disjoint sentence template IDs `H01` to `H30`) was used to prevent data leakage (sentence template memorization) and ensure evaluation of true generalization to unseen speakers speaking unseen sentences. Additionally, healthy control speakers (prefixed with `C`) were filtered out.
 
 > **Note**
 >
@@ -107,17 +106,20 @@ results/test_predictions.csv
 
 | Metric | Value |
 |---------|-------:|
-| WER | 1.3996 |
-| CER | 1.0809 |
+| WER | 1.3603 (136.03%) |
+| CER | 1.1068 (110.68%) |
+
+> **Note**
+> The baseline model has a WER/CER > 100% due to the severity of dysarthric speech and Whisper's transcription errors on it.
 
 ---
 
-## Fine-Tuned Model
+## Fine-Tuned Model (Dual-Independent Split)
 
 | Metric | Value |
 |---------|-------:|
-| WER | 0.0235 |
-| CER | 0.0188 |
+| WER | 0.8435 (84.36%) |
+| CER | 0.6198 (61.98%) |
 
 ---
 
@@ -125,13 +127,13 @@ results/test_predictions.csv
 
 | Metric | Improvement |
 |---------|------------:|
-| WER | **98.32%** |
-| CER | **98.26%** |
+| WER | **37.99%** |
+| CER | **44.00%** |
 
 Best validation checkpoint:
 
 ```
-checkpoint-1200
+checkpoint-1100
 ```
 
 ---

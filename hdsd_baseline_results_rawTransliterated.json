@@ -4,9 +4,9 @@
   "language": "Hindi",
   "microphone": "M2",
   "normalization": "ei→e, ii→i",
-  "train_samples": 1633,
-  "val_samples": 159,
-  "test_samples": 210,
-  "wer_baseline": 1.3995584988962473,
-  "cer_baseline": 1.0808835741571168
+  "train_samples": 899,
+  "val_samples": 44,
+  "test_samples": 45,
+  "wer_baseline": 1.3603351955307263,
+  "cer_baseline": 1.1068195534097767
 }
