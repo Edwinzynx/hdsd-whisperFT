@@ -1,0 +1,13 @@
+as of now, we are using only the notebooks 01,02.
+in these notebooks, we are preforming a speaker-sentence independent split,
+preprocessing/exploratory Data analysis on the audio files, setting baseline
+inference on the Whisper model using original weights, and then preforming
+Full Parameter Training on Whisper-small
+
+train_whisper_adalora.py trains the whisper model using adapters (PEFT),
+instead of training the whole model.
+However, this hasnt been run/done yet.
+
+Now, perform data augmentation, try Full para tuning, and then also
+compare the results with PEFT(no aug)-baseline results and PEFT(aug)-baseline
+with the Full para tuning results.

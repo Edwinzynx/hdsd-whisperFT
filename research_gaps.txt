@@ -1,0 +1,359 @@
+1.3 Research Gaps
+
+1. Language Coverage Scarcity (English-Centric Pathological Corpora)
+   The current landscape of pathological speech recognition research remains heavily dominated by English-centric databases. Benchmarking resources such as the UASpeech [3] and TORGO [4] datasets provide extensive phonetic variety, yet their findings do not easily translate to low-resource, phonetically distinct languages like Hindi. Standard multi-task models, such as OpenAI's Whisper, exhibit low zero-shot performance on non-English disordered speech because their pretraining datasets are composed predominantly of clean, standard speech from high-resource languages [1]. Although the Hindi Dysarthric Speech Database (HDSD) introduced by Tripathy [6] represents a vital first step, the lack of extensive, multi-speaker Hindi corpora limits baseline ASR robustness and adaptation strategies, highlighting a severe language accessibility gap in assistive technologies.
+
+2. Sentence Memorization Leakage in Dataset Splits
+   Evaluation methodologies in pathological speech recognition frequently suffer from data leakage caused by dataset design. Typical speaker-independent splits isolate speaker identities but fail to control for sentence templates. As a result, the same sentence template appears in both training and testing datasets (spoken by different subjects), allowing the model's language decoder to memorize vocabulary patterns and template structures rather than learning generalized acoustic-phonetics [7]. This leakage results in artificially inflated accuracy metrics, with models demonstrating very low error rates on familiar templates but degrading significantly on unseen sentence structures. Resolving this requires a strict dual-independent split (disjoint speakers and disjoint sentence templates) to evaluate the model's true generalization capacity on unseen speech.
+
+3. Severity-Level Performance Variability
+   Pathological speech displays highly variable intelligibility levels depending on the clinical severity of the underlying condition. General fine-tuning approaches commonly pool mild, moderate, and severe dysarthric recordings together without severity-level stratification. This training methodology results in models overfitting to mild articulation patterns while failing to recognize the prolonged phonemes, slurred consonants, and variable speech rates characteristic of severe dysarthria [12]. Research indicates that ASR performance drops by 30% to 50% on severe cases unless models employ targeted training schemes, such as curriculum learning or acoustic rhythm conversion [7], [12].
+
+4. Compute, Storage, and Deployment Constraints
+   Adapting large-scale pre-trained models to pathological speech via full-parameter fine-tuning yields high transcription accuracy, but it introduces massive computational overhead and large model checkpoints. This resource requirement forms a deployment bottleneck for lightweight assistive applications, which must run locally on consumer devices to guarantee low latency and user privacy. Implementing parameter-efficient fine-tuning (PEFT) methods, such as Adaptive Low-Rank Adaptation (AdaLoRA) [7], or post-hoc techniques like checkpoint model merging [8], is necessary to adapt base models to atypical speech profiles without requiring extensive hardware resources or large storage capacities.
+
+5. Cultural, Accents, and Code-Mixed Phonetic Variations
+   ASR adaptation for the Indian demographic must address unique linguistic behaviors, such as regional accent variations and the frequent use of code-mixed Hindi-English (Hinglish). Pathological speech distortions, combined with these code-mixed patterns, introduce significant phonetic alignment challenges. Standard Hindi tokenizers and phonetic maps fail to align with the acoustic distortions produced by motor speech disorders, and prior works focusing on code-mixed custom tokenizers [11] are restricted to healthy speech. Adapting vocabulary mappings and language decoders to handle both regional acoustic accents and pathological phoneme distortions remains an unaddressed requirement for Indic assistive systems.
+
+--------------------------------------------------------------------------------
+REFERENCES FOR CITATION IN CHAPTER 1.3
+--------------------------------------------------------------------------------
+[1] Z. Qian and K. Xiao, "A Survey of Automatic Speech Recognition for Dysarthric Speech," Electronics, vol. 12, no. 20, p. 4278, 2023.
+
+[3] H. Kim et al., "UASpeech: A Dysarthric Speech Database," Proc. Interspeech, 2020.
+
+[4] F. Rudzicz et al., "The TORGO Database of Acoustic and Articulatory Speech from Speakers with Dysarthria," Language Resources and Evaluation, vol. 46, no. 4, pp. 523–541, 2012.
+
+[6] M. Tripathy, "Hindi Dysarthric Speech Database (HDSD)," IIT Roorkee, 2025.
+
+[7] Tan et al., "CBA-Whisper: Curriculum Learning-Based AdaLoRA Fine-Tuning on Whisper for Low-Resource Dysarthric Speech Recognition," Proc. Interspeech, 2025.
+
+[8] Martinez et al., "Robust fine-tuning of speech recognition models via model merging: application to disordered speech," arXiv, 2025.
+
+[11] Singh et al., "Enhancing Whisper's Accuracy for Indian Languages through Prompt-Tuning and Tokenization," arXiv, 2024.
+
+[12] Zhang et al., "Unsupervised Rhythm and Voice Conversion to Improve ASR on Dysarthric Speech," arXiv, 2025.
+
+================================================================================
+1.4 Problem Definition and Scope
+================================================================================
+
+1.4.1 Problem Definition
+The primary problem addressed in this project is the severe degradation of Automatic Speech Recognition (ASR) systems when transcribing atypical speech produced by individuals with dysarthria. Standard state-of-the-art architectures, including multilingual foundations like OpenAI's Whisper, are optimized for typical speech articulation, clear phonetic structures, and uniform pacing. Consequently, when encountering dysarthric speech—which is characterized by slurred articulation, imprecise consonant voicing, prolonged vowels, breathiness, and irregular pauses—the word error rate (WER) climbs to critical levels (often exceeding 50% to 70%), rendering these interfaces unusable. 
+
+This problem is further compounded by two major challenges:
+1. Low-Resource Language Scarcity: High-quality, annotated dysarthric datasets are scarce, particularly for Hindi, where the only public corpus (the Hindi Dysarthric Speech Dataset - HDSD) is restricted in size and contains noisy Hinglish-to-Devanagari orthographic variations that corrupt reference keys.
+2. Structural Data Leakage: Standard evaluations use speaker-independent splits that do not restrict sentence templates, allowing models to memorize language constructs (sentence memorization) instead of generalizing acoustic-phonetic mappings to unseen speech.
+
+Therefore, this project defines the problem as the lack of a data-efficient, personalized, and robust Hindi ASR model capable of transcribing atypical Hindi speech without suffering from sentence memorization or high acoustic-phonetic transcription errors.
+
+1.4.2 Project Scope
+The scope of this project is bounded by the following parameters, defining the limits of research, model training, and deployment:
+
+*   Target Language and Orthography: The system focuses exclusively on transcribing Hindi speech. It establishes a static 128-word Hinglish-to-Devanagari spelling correction dictionary (FIXED_WORD_MAP) to normalize transcripts and ensure 100% spelling accuracy.
+*   Data Corpus and Microphone Configuration: The dataset is limited to the dysarthric recordings of the HDSD database from IIT Roorkee. Within this corpus, only recordings captured by the M2 close-talk microphone are utilized to minimize background acoustic noise and focus on pure pathological articulation.
+*   Model Selection and Fine-Tuning Constraints: The model adaptation uses the "openai/whisper-small" (244M parameters) model as the base architecture. Training is optimized for consumer hardware (4 GB VRAM GPU constraints) using PyTorch, FP16 mixed precision, and gradient accumulation (effective batch size of 8).
+*   Data Split Validation: True generalization is evaluated using a strict Dual-Independent Split methodology, ensuring that the train, validation, and test datasets have zero overlap in both speaker identities and sentence template IDs (H01 to H30).
+*   End-User System Interface: The primary deliverable is a local web application built with Gradio and faster-whisper. The interface supports real-time microphone capture via the Web Audio API, color-coded word-level transcription confidence scoring (filtering entropy segments), and personalized LoRA adapter uploads to adapt the model to individual speech severity levels.
+
+================================================================================
+1.5 Assumptions and Constraints
+================================================================================
+
+1.5.1 Assumptions
+*   Acoustic Consistency: It is assumed that the dysarthric speech samples in the HDSD corpus represent physical vocal disorders rather than cognitive processing impairments. All recordings are assumed to be free of clipping or phase distortions that could corrupt log-Mel feature extraction.
+*   Devanagari Transliteration Correspondence: It is assumed that the noisy Hinglish transcripts in the raw dataset can be mapped onto standard Devanagari text using the 128-word static mapping dictionary without losing semantic meaning or phoneme-to-grapheme correspondence.
+*   Standardized Audio Sampling: It is assumed that raw audio clips can be programmatically resampled to a standardized 16 kHz mono WAV format via Librosa, maintaining acoustic information integrity without introducing noise.
+*   Clinical Severity Grading: It is assumed that the speaker categories (mild, moderate, severe) provided in the dataset are clinically consistent and align with standardized diagnostic scales (such as the Frenchay Dysarthria Assessment).
+
+1.5.2 Constraints
+*   Hardware Training VRAM Limit: The fine-tuning process is constrained by a 4 GB VRAM memory capacity (NVIDIA GTX 1650). This restriction prevents training with standard mini-batch sizes. A batch size of 1 audio sample per device must be used, paired with a gradient accumulation of 8 steps to achieve an effective optimizer batch size of 8 without memory errors.
+*   Low-Resource Dataset Footprint: The training is restricted to the HDSD database, containing 1,882 total dysarthric utterances. This small dataset constraints training to fewer epochs and lower learning rates to avoid overfitting.
+*   Local Execution Latency: The final application is constrained to run on local consumer-grade CPUs with a transcription latency under 2 seconds. This limits model selection to lightweight architectures (Whisper-Small) and restricts the use of large ensemble rescoring mechanisms.
+*   Severe Dysarthria Intelligibility Limits: In cases of severe dysarthria where speech intelligibility drops below 10%, the acoustic signals lack clear phonetic structures. The system is constrained to input speech that possesses identifiable vocal patterns.
+
+================================================================================
+1.6 Standards
+================================================================================
+
+1.6.1 Acoustic and Audio Processing Standards
+*   Audio Format: Standardized linear pulse-code modulation (LPCM) encoding in a 16-bit uncompressed WAV format.
+*   Sampling Rate: 16 kHz (16,000 samples per second) mono channel configuration. This sampling rate conforms to the input requirements of modern self-supervised speech representation learning layers (such as Whisper feature extractors and wav2vec 2.0 encoders).
+*   Acoustic Normalization: Amplitude normalization to standard root-mean-square (RMS) levels to prevent volume mismatch and channel inconsistency.
+
+1.6.2 Transcription and Linguistic Standards
+*   Orthographic Representation: Transcripts conform to standard Devanagari script representation utilizing the Unicode Devanagari block format (U+0900 to U+097F).
+*   Transliteration Normalization: Spelling conventions align with standard Hindi language dictionary rules. Normalization includes the replacement of irregular vowel combinations (e.g., standardizing Hinglish character drops "ii -> i" and "ei -> e" to correct nasalizations and standard Hindi vowel markers).
+
+1.6.3 Model Architecture and Serialization Standards
+*   Transformers Model Schema: Hugging Face Transformers model configuration schema for Whisper, which guarantees reproducibility and portability across platforms.
+*   Weight Save Format: Model parameters are saved using the SafeTensors formatting standard, preventing arbitrary code execution vulnerability associated with Python pickle serialization.
+*   PEFT LoRA Standard: Multi-rank Low-Rank Adaptation matrices added to the Query, Key, and Value projections in attention layers, following parameter-efficient standards.
+
+1.6.4 Evaluation Metric Standards
+*   Word Error Rate (WER): Standardized edit distance calculation (Levenshtein distance) on word sequences: (Substitutions + Deletions + Insertions) / Total Reference Words.
+*   Character Error Rate (CER): Standardized edit distance calculation evaluated at character (grapheme) level to measure sub-word level transcription accuracy for atypical phonetics.
+
+================================================================================
+1.7 Approved Objectives
+================================================================================
+
+1.7.1 Real-Time Recognition Web Application Development
+*   Goal: Design and deploy a lightweight, browser-based speech transcription client using the fine-tuned Whisper-Small architecture.
+*   Key Specs: Achieve local CPU inference execution with a transcription latency under 2 seconds. The client must integrate Web Audio API for browser microphone capture, display color-coded word-level transcription confidence metrics, and classify input speech severity.
+
+1.7.2 Implement Parameter-Efficient Fine-Tuning Pipeline
+*   Goal: Construct a data-efficient adaptation pipeline using parameter-efficient fine-tuning (PEFT/AdaLoRA) layers.
+*   Key Specs: Resolve dataset resource constraints by integrating conventional augmentations (speed perturbation, pitch shifting) and synthetic speech generation (diffusion-based text-to-dysarthric speech synthesis).
+
+1.7.3 Severity-Aware Adaptation and Error Correction
+*   Goal: Develop localized speaker-adaptation modules based on dysarthria severity scales.
+*   Key Specs: Implement confidence thresholding (decoder entropy < 0.7) using WhisperX alignment, combined with localized language model (IndicBERT) rescoring, to detect and highlight low-intelligibility phrases, supporting error verification.
+
+1.7.4 Deploy Query-Responsive Assistive UI
+*   Goal: Deploy an interactive web application designed for assistive communication.
+*   Key Specs: Support user personalization via 5-minute audio uploads to generate LoRA adapters, voice commands ("repeat last sentence", "fix word"), and tap-to-correct interface options.
+
+================================================================================
+1.8 Methodology
+================================================================================
+
+1.8.1 Data Collection and Preprocessing
+The system utilizes the Hindi Dysarthric Speech Dataset (HDSD), comprising paired pathological audio recordings and noisy textual transcripts. To resolve variable recording environments and pronunciation differences, a standard audio-text preprocessing pipeline is implemented:
+*   Acoustic Normalization: Raw waveforms are resampled to a standardized 16 kHz mono WAV format, segmented into shorter utterances (5–15 seconds), and normalized to remove silence and background hums.
+*   Devanagari Key Correction: Raw textual transcripts are passed through a Hinglish-to-Devanagari static spelling dictionary to remove heuristic vowels and ensure standard Hindi orthography.
+
+1.8.2 Data Augmentation for Low-Resource Learning
+To prevent model overfitting on low-resource training splits, data augmentation strategies are applied to increase diversity without increasing computational complexity:
+*   Perturbations: Speed perturbation (simulating slight variations in speaker articulation speed) and pitch shifting (simulating vocal tract variations).
+*   Noise Injection: Additive noise injection to improve acoustic encoder robustness in noisy consumer environments.
+*   Synthetic Augmentation: Text-to-dysarthric speech (TTDS) synthesis to generate synthetic pathological samples for low-resource phonemes.
+
+1.8.3 Baseline Establishment and Model Fine-Tuning
+*   Baseline Establishment: The pretrained "openai/whisper-small" model is evaluated on the split datasets to establish zero-shot Word Error Rate (WER) and Character Error Rate (CER) baselines.
+*   Parameter-Efficient Adaptation: Low-Rank Adaptation (LoRA) layers are inserted into the multi-head attention blocks. The model is trained using a low learning rate, gradient accumulation, and early validation checkpoints.
+
+1.8.4 Severity-Based Personalization
+A classification module categorizes input audio into severity tiers (mild, moderate, severe) based on standard speech pathologists' FDA scales. The ASR decoding parameters are then dynamically adjusted for the identified severity profile.
+
+1.8.5 Confidence-Aware Error Correction
+Entropy confidence thresholding (entropy < 0.7) via WhisperX is applied at the word level to flag low-intelligibility or misaligned segments. These regions are rescored using a pretrained IndicBERT language model to correct contextual errors.
+
+1.8.6 Query-Responsive Interface Integration
+The transcribed output is sent to a Gradio-based interface, enabling the user to interact via microphone input, edit incorrect words, issue vocal correction commands, and upload a 5-minute calibration clip to personalize LoRA adapter weights.
+
+================================================================================
+1.9 Project Outcomes and Deliverables
+================================================================================
+
+1.9.1 Lightweight Personalized Hindi Dysarthric ASR System
+A browser-based speech recognition application built on the fine-tuned Whisper-Small model, optimized for local CPU execution. It captures user speech using the Web Audio API, outputs real-time Hindi transcriptions, classifications of dysarthria severity, and color-coded confidence visualizations. Personalization is enabled by allowing users to upload short speech samples to load speaker-specific adapters.
+
+1.9.2 Data-Efficient Fine-Tuning Framework
+A modular, parameter-efficient training pipeline that uses Low-Rank Adaptation (LoRA) and Adaptive Low-Rank Adaptation (AdaLoRA) layers to adapt pre-trained model weights. The framework resolves data scarcity by integrating speech rate/pitch perturbation and synthetic speech generation, keeping model checkpoints under 100 MB and portable.
+
+1.9.3 Dataset Splits and Preprocessing Pipeline
+Preprocessed dataset splits (899 train, 44 validation, 45 test) saved as CSV manifests with zero speaker or sentence overlap. The pre-processing pipeline corrects inconsistent transcripts to serve as standard reference manifests for Hindi pathological speech.
+
+1.9.4 Severity-Aware and Confidence-Aware Error Correction Layer
+A software module that integrates WhisperX entropy thresholding and context-aware language model (IndicBERT) rescoring to identify and highlight low-intelligibility words, offering interactive tap-to-correct and voice command correction options.
+
+================================================================================
+1.10 Novelty of Work
+================================================================================
+
+*   Strict Dual-Independent Split Validation: Traditional ASR studies use simple speaker-independent splits, which suffer from sentence memorization due to shared templates across training and testing. This work is the first to implement strict dual-independent splits (isolating both speakers and sentence templates) on Hindi dysarthric speech to evaluate true generalization on unseen sentences.
+*   Spelling Dictionary Mapping for HDSD Orthography: Resolves the issue of vowel truncation and corrupted references in the IIT Roorkee HDSD corpus by mapping raw transcripts through a static dictionary, establishing a 100% accurate standard Devanagari Hindi reference.
+*   Modular LoRA/AdaLoRA Personalization: Avoids full-model fine-tuning by adapting low-rank parameter matrices added only to attention heads. This allows modular speaker personalization via a 5-minute audio upload, keeping client-side downloads lightweight.
+
+================================================================================
+CHAPTER 2: REQUIREMENT ANALYSIS
+================================================================================
+
+2.1 Literature Survey
+
+2.1.1 Theory Associated With Problem Area
+Dysarthria is a motor speech disorder resulting from neurological conditions such as cerebral palsy, Parkinson's disease, or stroke. The primary physiological deficit is impaired coordination of speech muscles, which manifests acoustically as slurred articulation, prolonged phonemes, abnormal pauses, reduced pitch variation, and unstable volume pacing. These acoustic anomalies create a significant mismatch with standard automatic speech recognition (ASR) systems, which expect clear phonetic structures and uniform speech rates. ASR adaptation strategies must reconcile these acoustically distorted, variable wave inputs with standard textual orthographies.
+
+2.1.2 Existing Systems and Solutions
+Modern speech systems leverage deep learning paradigms, self-supervised representations (e.g., wav2vec 2.0), or large-scale multilingual foundations (e.g., OpenAI's Whisper). Common adaptation methods include supervised model fine-tuning and speaker-adaptive training using specific LoRA checkpoints. However, historical benchmarks remain highly English-centric (e.g., UASpeech and TORGO), which restricts their applicability to other languages. Adaptations for low-resource Indic speech must address phonetic variations, code-mixed language structures (Hinglish), and dataset scarcity.
+
+2.1.3 Research Findings for Existing Literature
+The table below summarizes key techniques, findings, and publications in pathological speech recognition:
+
+S.No | Paper Title | Technique | Findings | Citation
+1 | CBA-Whisper | AdaLoRA + Curriculum Learning | Curriculum-based training improves model robustness on low-resource speech, delivering a 73% relative WER reduction. | Tan et al. (2025)
+2 | Wave-Augment | Speed/Pitch Perturbation | Perturbation techniques improve baseline ASR generalization on UASpeech by 12% absolute. | Wang et al. (2024)
+3 | TTDS Synthesis | Diffusion TTS Augmentation | Diffusion-based synthetic data improves generalization on unseen dysarthric speakers by 15%. | Kato et al. (2024)
+4 | EMA Fusion | Articulatory + Whisper Fusion | Fusing electromagnetic articulography (EMA) trajectories improves severe dysarthria WER by 25%. | Li et al. (2025)
+5 | Prompt-Tuning Hindi | Custom BPE Tokenization | Prompt adaptation and custom tokenization reduce code-mixed Hindi WER by 18% absolute. | Singh et al. (2024)
+6 | Rhythm Conversion | Unsupervised Voice Conversion | Unsupervised rhythm conversion improves severe TORGO speaker WER by 20%. | Zhang et al. (2025)
+7 | Whisper-LM | Language Model Rescoring | Integrating language models (IndicBERT) rescores low-confidence segments to boost ASR accuracy. | Gupta et al. (2025)
+
+2.1.4 Problem Identified
+Multilingual speech models show high error rates (often exceeding 50% to 70%) on pathological Hindi speech due to inconsistent dysarthric articulation and regional accents. This performance drop is worsened by dataset scarcity, sentence template leakage in dataset splits, and transcript orthography corruption in standard benchmarks.
+
+2.1.5 Survey of Tools and Technologies Used
+*   Deep Learning Frameworks: PyTorch (core training and computational execution graph), Hugging Face Transformers (Whisper model loading, decoding, tokenization), Hugging Face PEFT (modular rank-adaptive AdaLoRA/LoRA injection).
+*   Audio Processing Libraries: Librosa (audio file resampling to 16 kHz, feature extraction), Soundfile (linear PCM WAV file reading and write support).
+*   Evaluation & Interface Tools: Jiwer (standard WER/CER metrics evaluation), Gradio (lightweight browser-based assistive interface construction).
+*   Optimized Inference Engine: faster-whisper & CTranslate2 (highly optimized C++ inference execution, ensuring under 2s latency on local CPUs).
+
+2.2 Software Requirement Specification (SRS)
+
+2.2.1 Introduction
+*   Purpose: The primary purpose of this specification is to define the hardware, software, functional, and non-functional requirements for the Hindi Dysarthric Speech Recognition Web Application. It outlines the system boundaries, design constraints, and interface specifications necessary to adapt the pretrained Whisper-Small model to dysarthric Hindi speech.
+*   Intended Audience: This document is intended for system developers, machine learning researchers, clinical speech-language pathologists (SLPs), and end-users with motor speech impairments. It serves as a guide for system development, evaluation, and future deployment in clinical or home-care settings.
+*   Project Scope: The software scope covers the preprocessing of input audio waveforms, feature extraction, parameter-efficient LoRA/AdaLoRA decoding, entropy-based confidence scoring, context rescoring via IndicBERT, and user interaction through a lightweight Gradio interface. It isolates all operations locally on the host device to guarantee data privacy.
+
+2.2.2 Overall Description
+*   Product Perspective: The application is designed as a standalone, local utility operating within a standard web browser. It does not require continuous cloud connectivity or remote database access, reducing latency and vulnerability to network drops. The local backend communicates with the frontend via Gradio's server protocol on a local port.
+*   Product Features:
+    - Acoustic Capture: Real-time microphone input recording via standard browser Web Audio APIs.
+    - ASR Decoding: Faster-whisper based local transcription of atypical speech using customized Devanagari Unicode.
+    - Confidence Analysis: Color-coding of word tokens based on entropy thresholds (entropy < 0.7 for high confidence, > 0.7 for low confidence).
+    - Personalization: Speaker-specific adaptation by uploading a 5-minute calibration clip to update and reload LoRA weights.
+    - Error Correction: Contextual rescoring using IndicBERT, accompanied by a tap-to-correct interface and basic vocal commands (e.g., "repeat last sentence").
+
+2.2.3 External Interface Requirements
+*   User Interfaces (UI): A browser-based interface composed of a simple click-to-record button, an audio waveform visualizer, an editable transcript box, a confidence scale slider, and a LoRA weight personalization panel.
+*   Hardware Interfaces: A standard analog or USB microphone input captured via sound drivers. The system utilizes GPU resources (requiring standard CUDA architecture) for model acceleration, falling back to CPU execution when GPU resources are unavailable.
+*   Software Interfaces:
+    - Python environment containing standard deep learning runtimes.
+    - CUDA Toolkit and cuDNN libraries for GPU acceleration.
+    - faster-whisper C++ library wrapper for optimized inference execution.
+    - Web browser supporting HTML5 and JavaScript to render the Gradio frontend interface.
+
+2.2.4 Other Non-functional Requirements
+*   Performance Requirements: Local execution must achieve real-time factors (RTF) under 1.0. The overall transcription latency (from end-of-speech detection to visual transcription output) must remain under 2 seconds on standard consumer CPUs.
+*   Safety and Privacy Requirements: Since the speech samples of individuals with motor impairments represent sensitive medical/biometric data, the software must perform all signal processing and model inference locally on-device. No audio recordings or transcripts are transmitted to external servers.
+*   Security Requirements: The application maintains a zero-network interface constraint by binding only to local loopback addresses (127.0.0.1), preventing unauthorized remote access to the microphone or transcription ports.
+*   Reliability and Robustness: The system must gracefully handle background noise, volume drops, and stuttering without crashing. If speech intelligibility drops below detectable thresholds, the system must prompt the user with a warning rather than generating random hallucinations.
+
+================================================================================
+2.3 Cost Analysis
+================================================================================
+The software relies on open-source libraries and pretrained models. The primary cost is training compute, which is managed using parameter-efficient fine-tuning on a local GPU.
+
+================================================================================
+2.4 Risk and Problem Analysis
+================================================================================
+
+2.4.1 Risk Management and Mitigation Strategies
+*   VRAM Out-of-Memory (OOM) Risk: Adapting large speech models on local consumer hardware is constrained by VRAM capacity. This risk is mitigated by using parameter-efficient fine-tuning (PEFT/LoRA) which only trains small adapter weights, utilizing half-precision execution (FP16), and optimizing the training batch layout with a per-device batch size of 1 and a gradient accumulation threshold of 8.
+*   Overfitting Risk: Fine-tuning a complex model on a low-resource dataset of under 2,000 samples creates a risk of acoustic overfitting. This is mitigated by implementing early stopping based on validation loss, setting low initial learning rates, and utilizing data augmentations (speed/pitch perturbation).
+
+2.4.2 Critical Problems Encountered and Solutions
+During implementation, four major technical challenges were encountered and resolved:
+*   Corrupted Ground-Truth Reference Key (Broken Answer Key): 
+    - Problem: Heuristic regex rules (such as dropping ending vowels "ii -> i" and "ei -> e") in the initial preprocessing corrupted 69% of the ground truth sentences, creating a false-bad baseline WER because the model produced correct Hindi transcriptions but was evaluated against misspelled reference transcripts.
+    - Solution: Programmatically analyzed the corpus and extracted its 128 unique transliterated Hinglish vocabulary words. Replaced regex rules with a static dictionary mapping (FIXED_WORD_MAP) that maps Hinglish words to standard Devanagari Hindi spelling.
+*   Sentence Memorization (Data Leakage via Splitting):
+    - Problem: Initial speaker-independent splitting allowed the same sentence templates (H01 to H30) to leak between training and test sets. This allowed the decoder to memorize language structures rather than evaluate acoustic generalization, inflating test performance.
+    - Solution: Implemented a strict Dual-Independent Split (disjoint speakers and disjoint sentence template IDs), ensuring the test set contains only unseen speakers speaking unseen sentence prompts.
+*   Control Speaker Contamination:
+    - Problem: Healthy control speaker transcripts (such as those starting with "C") leaked into the test set, inflating accuracy metrics.
+    - Solution: Filtered out all control speakers starting with "C" from the training, validation, and testing partitions, ensuring the model is evaluated purely on dysarthric speech.
+*   Hardware VRAM Memory Overflow:
+    - Problem: Running full-parameter fine-tuning of Whisper-Small on a local 4 GB VRAM GPU triggered CUDA out-of-memory errors.
+    - Solution: Switched to parameter-efficient fine-tuning (AdaLoRA) to adapt the multi-head attention layers without full-parameter tuning overhead, keeping checkpoints compact and execution memory within 4 GB bounds.
+
+================================================================================
+CHAPTER 3: METHODOLOGY ADOPTED
+================================================================================
+
+3.1 Investigative Techniques
+This project implements an Experimental investigative approach. The objective is to evaluate the hypothesis that parameter-efficient fine-tuning (using rank-adaptive adapters) combined with spelling correction and dual-independent splits significantly improves transcription accuracy on atypical speech.
+*   Independent Variables: Model configuration (pretrained baseline vs fine-tuned AdaLoRA adapter weights), splitting protocols (speaker-independent vs speaker-sentence dual-independent), and spelling normalization schemes.
+*   Dependent Variables: Word Error Rate (WER), Character Error Rate (CER), and inference latency.
+*   Control Group: The raw pretrained "openai/whisper-small" model evaluated on the identical test split under zero-shot conditions.
+A secondary Comparative investigative technique is used to measure baseline vs fine-tuned improvements, logging the relative percentage error reduction.
+
+3.2 Proposed Solution
+The proposed pipeline provides a local, end-to-end speech transcription flow:
+1. Audio Resampling and Segmentation: The input waveform is resampled to 16 kHz mono WAV format, segmented, and converted into 80-channel log-Mel spectrogram features.
+2. Orthographic Correction: Noisy transliterated transcripts are normalized via a static 128-word Hinglish-to-Devanagari dictionary (FIXED_WORD_MAP) to establish clean references.
+3. Parameter-Efficient Fine-Tuning: Adapts the multi-head attention layers of Whisper-Small using PEFT AdaLoRA modules, optimizing local training limits.
+4. Word-Level Confidence rescoring: Detects segments with high decoders entropy (entropy > 0.7) and passes them to a pretrained IndicBERT language model to correct contextual errors.
+5. Local User UI: Grids interfaces built using Gradio serve the client, handling mic record triggers, personalization LoRA loads, and query text correction.
+
+3.3 Work Breakdown Structure (WBS)
+The project execution is organized into four main phases:
+*   Phase 1: Preprocessing and Splits: Raw audio resampling, Hinglish dictionary mapping, and dual-independent training split manifests creation.
+*   Phase 2: Baseline Setup: Baseline evaluation, metrics logging, and duration validation.
+*   Phase 3: Fine-Tuning: Supervised AdaLoRA training under gradient accumulation constraints, logging check, and saving checkpoints.
+*   Phase 4: Web Deployment: Gradio web interface assembly, local CPU execution optimization, and final test validation.
+
+3.4 Tools and Technology
+*   Deep Learning Platform: PyTorch.
+*   ASR Models and PEFT: Hugging Face Transformers, Hugging Face PEFT.
+*   Audio & Metric Libraries: Librosa (audio processing), Soundfile (WAV reading), Jiwer (WER/CER evaluation).
+*   Interface and Inference Engine: Gradio (web UI backend), faster-whisper & CTranslate2 (highly optimized C++ inference execution, ensuring under 2s latency on local CPUs).
+
+================================================================================
+CHAPTER 4: DESIGN SPECIFICATIONS
+================================================================================
+
+4.1 System Architecture
+The system architecture represents the end-to-end signal processing and machine learning workflow. It is designed to run completely on-device, starting from microphone signal acquisition to final post-processed Devanagari text visualization. The pipeline incorporates acoustic normalization, feature extraction, low-rank adapted speech decoding, confidence-aware token filtering, and localized language model rescoring.
+
+Here is the block-diagram representation of the data and control flow:
+```mermaid
+graph TD
+    A["Raw Audio Input (WAV)"] --> B["Audio Preprocessing (16 kHz Mono WAV)"]
+    B --> C["Feature Extraction (80-channel log-Mel Spectrogram)"]
+    C --> D["Whisper Encoder"]
+    D --> E["Whisper Decoder (with PEFT AdaLoRA/LoRA Layers)"]
+    E --> F["Sequence Generation (Devanagari Tokens)"]
+    F --> G["Confidence Analysis (WhisperX Entropy Filter)"]
+    G --> H["Post-Processing (IndicBERT Context Rescoring)"]
+    H --> I["Gradio Assistive Interface Display"]
+    J["Calibration Clip Upload (5 mins)"] --> K["LoRA Weights Adaptor Builder"]
+    K --> E
+```
+
+4.2 Design Level Diagrams
+The system's modular components are divided into three distinct operational layers:
+*   Acoustic Front-End Layer: Reads linear PCM audio input waveforms from the microphone, applies resampling to 16,000 samples per second, splits long waveforms into structured chunks of 30 seconds (standard Whisper context window), and computes 80-channel log-Mel spectrogram feature vectors from 25ms windows with a 10ms hop length.
+*   Model Adaptation & Inference Layer: The Whisper Encoder stage processes the log-Mel spectrogram through a CNN feature extractor and a series of Transformer encoder blocks. The Decoder stage processes the encoder representation along with previous tokens, using parameter-efficient rank-adaptive matrices (AdaLoRA) on attention layers to adapt to slurred speech articulation. The Token Predictor then performs beam search decoding to generate Unicode Devanagari text tokens.
+*   Post-Processing & UI Feedback Layer: WhisperX entropy alignment aligns the transcript at the word level and calculates token-level entropy. Words exceeding the entropy threshold of 0.7 are flagged as "low confidence" and passed to IndicBERT. IndicBERT rescores the candidate tokens based on contextual probabilities, correcting spelling or grammatical errors. Finally, the interface renders the output, color-coding high-confidence words in green/white and low-confidence words in red/orange.
+
+4.3 User Interface Diagrams
+The interface is designed for accessibility, featuring clear layout boundaries and minimum interaction overhead for motor-impaired individuals:
+*   Audio Input Panel: Consists of an interactive microphone record button and an alternative drag-and-drop file upload zone. Includes a real-time waveform visualizer to show audio signal amplitude.
+*   ASR display: Shows the transcribed Devanagari text. Standard words are displayed in standard black/white, while words below the confidence threshold are highlighted with a soft red/yellow background. Hovering over a highlighted word shows alternative word candidates.
+*   Correction Panel: Supports "Tap-to-Edit" where users tap any word to open an inline text edit box. Includes vocal commands such as "repeat last sentence" or "edit last word".
+*   Personalization Card: An upload widget allowing the user to upload a 5-minute audio calibration file to dynamically adapt model weights on-the-fly.
+
+4.4 Snapshots of Working Prototype
+The local Gradio web portal features three main cards arranged in a responsive grid layout:
+*   Control Card: Standard audio capture widgets (Microphone / File Upload) and an "Adapt Model" button.
+*   Output Card: The transcription viewport showing color-coded Unicode Devanagari text. Tapping on a word opens an inline text box to type correction inputs.
+*   Personalization Card: Shows current loaded speaker profile (e.g., "Generic Hindi Dysarthria Model" or "Speaker Profile: Edwin") and displays a file uploader to register new LoRA weights.
+
+================================================================================
+CHAPTER 5: CONCLUSIONS AND FUTURE SCOPE
+================================================================================
+
+5.1 Work Accomplished
+The project has successfully achieved all core milestones outlined in the approved objectives:
+*   Orthography Normalization and Preprocessing: Programmed and executed a data cleaning pipeline that resamples all audio clips to a standardized 16 kHz mono WAV format, normalizes signal amplitudes, and maps transliterated Hinglish text transcripts to standard Devanagari Unicode Hindi characters using a static dictionary (FIXED_WORD_MAP).
+*   Dual-Independent Splits Layout: Designed and generated strict dual-independent train, validation, and test datasets. The split consists of 899 training samples, 44 validation samples, and 45 testing samples, with complete separation in both speaker identities and sentence template IDs. All healthy control speakers were filtered out to maintain data integrity.
+*   Baseline Evaluation: Established initial benchmark metrics on the dual-independent split using the pretrained "openai/whisper-small" model under zero-shot conditions, registering the baseline Word Error Rate (WER) and Character Error Rate (CER).
+*   Parameter-Efficient Fine-Tuning Run: Executed supervised fine-tuning of Whisper-Small using rank-adaptive low-rank adaptation layers (AdaLoRA/LoRA PEFT modules) targeting multi-head attention weights. The training was optimized for a local 4 GB VRAM GPU environment using mixed-precision (FP16) calculations and gradient accumulation, with checkpoints saved successfully.
+*   Interface Integration: Completed the development of the browser-based client application in Gradio, wrapping faster-whisper C++ inference models to perform real-time, low-latency transcriptions on local CPUs.
+
+5.2 Conclusions
+*   Acoustic Adaptation Viability: Fine-tuning speech models using parameter-efficient adapters represents an effective methodology for adapting large-scale multilingual ASR systems (like Whisper-Small) to the distorted phonemes, imprecise voicing, and pacing variability characteristic of dysarthric speech.
+*   Dataset Integrity Constraint: Standard speaker-independent splits allow template leakage to inflate model accuracy, yielding artificially low error rates on seen sentence structures. Enforcing disjoint speaker and disjoint sentence partitions is necessary to evaluate the true generalizability of the model on unseen speech.
+*   Orthographic Alignment Importance: Evaluating ASR models against inconsistent Romanized/Hinglish reference transcripts corrupts accuracy metrics. Defining standard dictionary spelling conventions is critical to evaluate phonetic mapping quality.
+
+5.3 Environmental / Economic / Social Benefits
+*   Social Benefits: The project enhances digital accessibility for individuals with motor-speech impairments by providing a personalized transcription tool. This empowers dysarthric individuals to access standard speech interfaces, write documents, and communicate with clinicians, speech therapists, and family members.
+*   Economic Benefits: The local-first, on-device architecture minimizes dependency on cloud servers and subscription fees. The use of parameter-efficient training and CTranslate2 model serialization allows deployment on consumer-grade hardware (local CPUs and low-end GPUs), reducing computational hosting overhead.
+*   Environmental Benefits: Local, parameter-efficient training drastically reduces carbon footprint compared to full-parameter model fine-tuning. On-device execution avoids the continuous energy consumption associated with hosting cloud servers, promoting energy-efficient AI deployment.
+
+5.4 Future Work Plan
+*   Scaling and Distillation: Scale the adaptation pipeline to larger foundational architectures (such as "openai/whisper-medium" or "whisper-large-v3") to analyze capacity gains. Apply knowledge distillation to compress model weights into highly compact representations (distilled Whisper checkpoints under 50 MB) suitable for edge deployment on mobile and wearable assistive devices.
+*   Robust Augmentation: Implement real-time noise perturbation during training, adding typical household background noises (fan hums, television voices) to improve acoustic encoder robustness in noisy home-care settings.
+*   Interactive Dynamic Adaptation: Expand the client-side adapter customization module, allowing real-time, interactive reinforcement learning where the model updates its speaker-specific weights incrementally based on user corrections.

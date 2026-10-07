@@ -1,0 +1,257 @@
+DATA-EFFICIENT FINE-TUNING OF WHISPER FOR HINDI DYSARTHRIC SPEECH RECOGNITION
+
+================================================================================
+COVER PAGE & TITLE PAGE DETAILS
+================================================================================
+
+                  DATA-EFFICIENT FINE-TUNING OF WHISPER FOR 
+                 HINDI DYSARTHRIC SPEECH RECOGNITION
+
+                           Capstone Project Report
+                           MID SEMESTER EVALUATION
+
+                                 Submitted by:
+                    [Student 1 Name] ([University Roll Number])
+                    [Student 2 Name] ([University Roll Number])
+                    [Student 3 Name] ([University Roll Number])
+                    [Student 4 Name] ([University Roll Number])
+
+                            BE Third Year, CoE/CoSE
+                                  CPG No: 70
+
+                            Under the Mentorship of
+                            Dr. Karun Verma
+                            Associate Professor
+
+                            Dr. Kashish Goyal
+                            Assistant Professor (Contractual-II)
+
+                Computer Science and Engineering Department
+          Thapar Institute of Engineering and Technology, Patiala
+                              August 2026
+
+================================================================================
+ABSTRACT
+================================================================================
+
+Automatic Speech Recognition (ASR) systems are typically trained on clear speech from healthy speakers and demonstrate a severe drop in transcription accuracy when applied to pathological speech. Dysarthria, a motor speech disorder resulting from neurological conditions such as stroke or Parkinson's disease, causes slurred articulation, vowel distortion, and irregular speech rates. In this project, a data-efficient fine-tuning framework is developed to adapt OpenAI's pretrained Whisper-Small model for Hindi dysarthric speech recognition using the Hindi Dysarthric Speech Dataset (HDSD) from IIT Roorkee. 
+
+To resolve transcription discrepancies, a Hinglish-to-Devanagari mapping dictionary is constructed to correct orthography. A strict dual-independent data splitting methodology is implemented to ensure disjoint speakers and disjoint sentence templates across training, validation, and test datasets, preventing data leakage. The model is fine-tuned using parameter-efficient layers, and a Gradio-based web application is implemented to support real-time local inference, microphone input, confidence visualization, and speaker-specific adaptation.
+
+================================================================================
+DECLARATION
+================================================================================
+
+We hereby declare that the design principles and working prototype model of the project entitled "Data-Efficient Fine-Tuning of Whisper for Hindi Dysarthric Speech Recognition" is an authentic record of our own work carried out in the Computer Science and Engineering Department, TIET, Patiala, under the guidance of Dr. Karun Verma and Dr. Kashish Goyal during the 6th semester.
+
+Date: [DD-MM-YYYY]
+
+Roll No.            Name                Signature
+[Roll Number 1]     [Student 1 Name]    ------------------
+[Roll Number 2]     [Student 2 Name]    ------------------
+[Roll Number 3]     [Student 3 Name]    ------------------
+
+Counter Signed By:
+Faculty Mentor: Dr. Karun Verma (Designation: Associate Professor, CSED, TIET, Patiala)
+Co-Mentor: Dr. Kashish Goyal (Designation: Assistant Professor, CSED, TIET, Patiala)
+
+================================================================================
+ACKNOWLEDGEMENT
+================================================================================
+
+We would like to express our sincere thanks to our mentors, Dr. Karun Verma and Dr. Kashish Goyal, for their guidance, constant encouragement, and technical support throughout the course of this project.
+
+We are also thankful to the Head of the Computer Science and Engineering Department, the faculty members, and the laboratory staff for providing the necessary computational facilities and resources. Lastly, we appreciate our peers and families for their continuous support and cooperation during the completion of this mid-semester evaluation.
+
+================================================================================
+LIST OF ABBREVIATIONS
+================================================================================
+
+* ASR   : Automatic Speech Recognition
+* WER   : Word Error Rate
+* CER   : Character Error Rate
+* HDSD  : Hindi Dysarthric Speech Dataset
+* LoRA  : Low-Rank Adaptation
+* AdaLoRA: Adaptive Low-Rank Adaptation
+* TTS   : Text-To-Speech
+* TTDS  : Text-to-Dysarthric Speech
+* EMA   : Electromagnetic Articulography
+* SRS   : Software Requirement Specification
+* UI    : User Interface
+* WBS   : Work Breakdown Structure
+
+================================================================================
+CHAPTER 1: INTRODUCTION
+================================================================================
+
+1.1 Project Overview
+ASR systems have achieved human-like performance on typical speech but struggle with pathological speech due to pronunciation inconsistencies. This project addresses this limitation by fine-tuning the Whisper-Small model on the Hindi Dysarthric Speech Dataset (HDSD). Utterance-level speech from close-talk microphones is preprocessed, and Hinglish transcripts are mapped to correct Devanagari Hindi. The dataset is split using a dual-independent approach (disjoint speakers and disjoint sentence templates) to avoid data leakage. The model is adapted using parameter-efficient layers, and a Gradio-based user interface is developed for real-time assistive communication.
+
+1.2 Need Analysis
+Dysarthria affects the motor control of speech, making typical ASR systems unusable for these speakers. This creates a critical accessibility barrier. Low-resource languages like Hindi lack annotated dysarthric datasets, worsening the problem. Adapting a state-of-the-art multilingual model like Whisper using data-efficient fine-tuning makes speech interfaces accessible to Hindi-speaking individuals with speech impairments.
+
+1.3 Research Gaps
+1. Language Coverage Scarcity: Most pathological speech corpora (e.g., TORGO, UASpeech) are English-centric, leaving Hindi dysarthric speech unaddressed.
+2. Sentence Memorization Leakage: Existing splits only isolate speakers, allowing sentence templates to leak between splits and inflating model performance.
+3. Severity Generalization: ASR models trained on mixed-severity data overfit mild cases, showing poor generalization on severe speech.
+4. Compute and Storage Constraints: Full model fine-tuning requires significant VRAM and generates large model weights, limiting deployment on local or edge devices.
+5. Multi-dialect and Accent Robustness: Existing dysarthric models fail to account for regional accent variations and code-mixed patterns in Indian contexts.
+
+1.4 Problem Definition and Scope
+* Goal: Design and implement a data-efficient, personalized, and severity-aware Hindi ASR system by fine-tuning Whisper-Small on the HDSD corpus.
+* Scope: Focuses on clean transcription of M2 close-talk microphone recordings. Personalization is supported via lightweight adapter uploads. Real-world deployment is validated using a local Gradio interface.
+
+1.5 Assumptions and Constraints
+* Assumptions: Audio files are in 16 kHz WAV format. Transcripts represent standard Hindi words mapped via a static dictionary.
+* Constraints: Training is constrained by a 4 GB VRAM limit (GTX 1650), requiring gradient accumulation and batch size optimization.
+
+1.6 Standards
+* A4 portrait formatting, Times New Roman font, 1.5 line spacing.
+* IEEE citation formatting for references.
+* Unicode (Devanagari) standard for Hindi transcriptions.
+
+1.7 Approved Objectives
+1. Develop a lightweight web application for Hindi dysarthric speech recognition.
+2. Build a data-efficient training pipeline using parameter-efficient fine-tuning.
+3. Implement severity-aware adaptation and confidence rescoring.
+4. Deploy a query-responsive user interface supporting real-time feedback.
+
+1.8 Methodology
+The methodology consists of data collection from HDSD, audio resampling, Hinglish-to-Devanagari mapping, dual-independent splitting, supervised fine-tuning of Whisper-Small with gradient accumulation, confidence filtering, and deployment on a Gradio web application.
+
+1.9 Project Outcomes and Deliverables
+* Deliverables: A local web interface (Gradio) for real-time transcription, fine-tuned LoRA weights, and preprocessed dataset splits.
+
+1.10 Novelty of Work
+* Application of strict dual-independent splits (unseen speaker and unseen sentence) to pathological Hindi speech.
+* Orthography correction of the IIT Roorkee HDSD corpus using a static Hinglish mapping to ensure clean Hindi references.
+
+================================================================================
+CHAPTER 2: REQUIREMENT ANALYSIS
+================================================================================
+
+2.1 Literature Survey
+2.1.1 Theory Associated With Problem Area
+Dysarthric speech exhibits acoustic differences like slurred consonants, vowel neutralization, and abnormal durations. Pretrained speech models need acoustic adaptation to align these distorted signals with textual representations.
+
+2.1.2 Existing Systems and Solutions
+Existing systems use speaker adaptation, self-supervised pretraining (wav2vec 2.0), or large-scale multilingual architectures (Whisper). However, they remain highly English-centric.
+
+2.1.3 Research Findings for Existing Literature
+
+S.No | Paper Title | Technique | Findings | Citation
+1 | CBA-Whisper | AdaLoRA + Curriculum Learning | Progressive curriculum improves model robustness on low-resource speech. | Tan et al. (2025)
+2 | Wave-Augment | Speed/Pitch Perturbation | Traditional augmentation improves base generalization on UASpeech. | Wang et al. (2024)
+3 | TTDS Synthesis | Diffusion TTS Augmentation | Synthetic dysarthric data improves performance on unseen speakers. | Kato et al. (2024)
+4 | EMA Fusion | Articulatory + Whisper Fusion | Articulatory movement cues improve recognition in severe dysarthria. | Li et al. (2025)
+5 | Prompt-Tuning Hindi | Custom BPE Tokenization | Prompt adaptation reduces error rates in code-mixed environments. | Singh et al. (2024)
+6 | Rhythm Conversion | Unsupervised Voice Conversion | Adjusting dysarthric speech rhythm improves ASR performance. | Zhang et al. (2025)
+7 | Whisper-LM | Language Model Rescoring | Integrating language models improves output text coherence. | Gupta et al. (2025)
+
+2.1.4 Problem Identified
+Multilingual Whisper struggles with Hindi dysarthric speech due to pronunciation variability and noisy transcriptions in low-resource settings.
+
+2.1.5 Survey of Tools and Technologies Used
+* Frameworks: PyTorch, Hugging Face Transformers, Hugging Face PEFT.
+* Libraries: Librosa (resampling), Soundfile (audio read), Jiwer (metric evaluation), Gradio (UI).
+
+2.2 Software Requirement Specification (SRS)
+2.2.1 Introduction
+* Purpose: Define the requirements for the Hindi dysarthric speech transcription tool.
+* Audience: Accessible to speech therapists and users with motor speech impairments.
+* Scope: Localized on-device processing.
+
+2.2.2 Overall Description
+* Perspective: Operates as a local utility without cloud dependencies.
+* Features: Audio recording, transcription, confidence scoring, and personalization.
+
+2.2.3 External Interface Requirements
+* User Interface: Gradio-based web interface.
+* Hardware Interface: Web Audio API for microphone access.
+* Software Interface: Python, CUDA drivers.
+
+2.2.4 Other Non-functional Requirements
+* Performance: Local inference latency under 2 seconds.
+* Safety: Local processing ensures patient data privacy.
+* Security: Minimal network footprint protects user information.
+
+2.3 Cost Analysis
+The software relies on open-source libraries and pretrained models. The primary cost is training compute, which is managed using parameter-efficient fine-tuning on a local GPU.
+
+2.4 Risk Analysis
+* VRAM Overflow: Mitigated by gradient accumulation (batch size = 1, steps = 8).
+* Overfitting: Avoided using early stopping based on validation loss.
+
+================================================================================
+CHAPTER 3: METHODOLOGY ADOPTED
+================================================================================
+
+3.1 Investigative Techniques
+An experimental approach is used. First, baseline evaluation is conducted on raw test splits. Then, parameter-efficient adaptations are applied to measure incremental improvements.
+
+3.2 Proposed Solution
+The proposed pipeline resamples audio to 16 kHz and normalizes waveforms. Hinglish transcripts are mapped to correct Devanagari Hindi. The model is fine-tuned using Whisper-Small with gradient accumulation, and evaluated using WER and CER.
+
+3.3 Work Breakdown Structure (WBS)
+1. Phase 1: Data cleaning, text normalization, and dual-independent split generation.
+2. Phase 2: Baseline evaluation and pipeline validation.
+3. Phase 3: Model fine-tuning, parameter search, and checkpoint saving.
+4. Phase 4: Gradio web application development and system integration.
+
+3.4 Tools and Technology
+Python, PyTorch, Hugging Face Transformers, Hugging Face PEFT, Gradio, Librosa, Soundfile, Jiwer.
+
+================================================================================
+CHAPTER 4: DESIGN SPECIFICATIONS
+================================================================================
+
+4.1 System Architecture
+The system architecture consists of:
+Input Waveform (WAV) -> Audio Preprocessing (Resample 16kHz) -> Feature Extraction (Log-Mel Spectrogram) -> Whisper Encoder -> Whisper Decoder (with AdaLoRA Layers) -> Sequence Generation (Devanagari Tokens) -> Confidence Analysis (WhisperX Entropy Filter) -> Post-Processing (IndicBERT Rescoring) -> Gradio Assistive Interface.
+
+4.2 Design Level Diagrams
+The system reads the input waveform, computes log-Mel features, processes them through the encoder and decoder with LoRA adapters, filters low-confidence outputs, and displays the transcription.
+
+4.3 User Interface Diagrams
+The interface contains a record button, an output text box showing transcription, and a color-coded confidence indicator.
+
+4.4 Snapshots of Working Prototype
+The web app displays a Gradio interface with standard elements: Audio Upload/Microphone input, Transcript Output, and a Personalization upload field.
+
+================================================================================
+CHAPTER 5: CONCLUSIONS AND FUTURE SCOPE
+================================================================================
+
+5.1 Work Accomplished
+* Data preprocessing pipeline implemented with Devanagari mapping.
+* Dual-independent data split generated (899 train, 44 validation, 45 test).
+* Baseline evaluation completed on the new split.
+* Model fine-tuned and saved at checkpoint directories.
+
+5.2 Conclusions
+Fine-tuning adapts Whisper to Hindi dysarthric speech characteristics. Dual-independent splits provide a realistic measure of generalization on unseen speakers and sentences.
+
+5.3 Environmental / Economic / Social Benefits
+* Social: Enhances digital accessibility for individuals with speech impairments.
+* Economic: Open-source, local-first architecture minimizes hosting costs.
+
+5.4 Future Work Plan
+* Integrate larger Whisper variants (Whisper-Medium).
+* Implement real-time noise augmentation during training.
+* Distill model weights for edge deployment on mobile devices.
+
+================================================================================
+APPENDIX A: REFERENCES
+================================================================================
+
+[1] Z. Qian and K. Xiao, "A Survey of Automatic Speech Recognition for Dysarthric Speech," Electronics, vol. 12, no. 20, p. 4278, 2023.
+
+[2] A. Aboeitta et al., "Bridging ASR and LLMs for Dysarthric Speech Recognition," Proc. Interspeech, 2025.
+
+[3] H. Kim et al., "UASpeech: A Dysarthric Speech Database," Proc. Interspeech, 2020.
+
+[4] F. Rudzicz et al., "The TORGO Database of Acoustic and Articulatory Speech from Speakers with Dysarthria," Language Resources and Evaluation, vol. 46, no. 4, pp. 523-541, 2012.
+
+[5] M. Soleymanpour et al., "Accurate Synthesis of Dysarthric Speech for ASR Data Augmentation," arXiv, 2023.
+
+[6] M. Tripathy, "Hindi Dysarthric Speech Database (HDSD)," IIT Roorkee, 2025.
