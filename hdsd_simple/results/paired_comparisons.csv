@@ -1,0 +1,10 @@
+split,left,right,mean_wer_difference_pp,speaker_bootstrap_low_pp,speaker_bootstrap_high_pp,speakers,prompts,speakers_helped_by_right,speakers_worsened_by_right,speakers_tied,resamples,bootstrap_seed,scope
+test,full,lora,-0.2793296089385464,-10.670536652131013,9.082397003745317,9,5,5,4,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+test,pretrained,full,8.472998137802605,-4.828226555246054,23.112338858195216,9,5,6,3,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+test,pretrained,lora,8.193668528864059,-0.19436345966958246,17.207354895879472,9,5,5,4,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+test_speaker_train_prompt,full,lora,-27.142857142857146,-30.0418410041841,-24.278777492145103,9,21,0,9,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+test_speaker_train_prompt,pretrained,full,75.37815126050421,61.2194975255572,90.1929645756217,9,21,9,0,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+test_speaker_train_prompt,pretrained,lora,48.23529411764706,36.11553957921812,60.75708061002178,9,21,9,0,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+train_speaker_test_prompt,full,lora,2.7524792552114974,-0.9035762304355304,6.538009875248516,41,5,26,15,0,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+train_speaker_test_prompt,pretrained,full,9.633677393240234,3.4282917284431367,16.65704280371806,41,5,27,13,1,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"
+train_speaker_test_prompt,pretrained,lora,12.386156648451731,6.172606568832985,19.182023549973866,41,5,30,8,3,20000,20261015,"exploratory; conditional on these prompts, split, and trained seeds; no multiplicity correction"

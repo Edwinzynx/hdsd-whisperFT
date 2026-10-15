@@ -1,0 +1,49 @@
+{
+  "release": "Jupyter notebook source export, 2026-10-15",
+  "data_included": false,
+  "notebook_outputs_included": false,
+  "training_or_inference_for_export": false,
+  "notebooks": [
+    {
+      "file": "01_HDSD_Preprocessing_Baseline.ipynb",
+      "published_sha256": "c08627dd76a3e0019d883fd1b147548d781fb0919fae5686f7d92a02369756a9",
+      "source_unchanged_from_live_jupyter": true,
+      "saved_outputs_removed": 20
+    },
+    {
+      "file": "02_HDSD_Full_FineTuning.ipynb",
+      "published_sha256": "025a04b91f820e7dc78fb18efcb34cdd3d04c4eb698fe235abed3594a328d318",
+      "source_unchanged_from_live_jupyter": true,
+      "saved_outputs_removed": 37
+    },
+    {
+      "file": "03_HDSD_PEFT_FineTuning.ipynb",
+      "published_sha256": "2741dfce802c0dc2757d90e1c9659c04bcfa6cfa0d93640bb50e7b7e35a8d8c2",
+      "source_unchanged_from_live_jupyter": true,
+      "saved_outputs_removed": 49
+    }
+  ],
+  "model": "openai/whisper-small",
+  "model_revision": "973afd24965f72e36ca33b3055d56a652f456b4d",
+  "scientific_engine_sha256": {
+    "01_HDSD_Preprocessing_Baseline.ipynb": "24adb6d0773eb806c8077cd5c49dea8b288d0abc3b48c5c552b27ac899a0b6ba",
+    "02_HDSD_Full_FineTuning.ipynb": "a6db0bdcff15e23e15f62605534cd3bbd523172d810d8c11330777b4968be274",
+    "03_HDSD_PEFT_FineTuning.ipynb": "18eaf7a10b2ddcd0f3c5bff5b9ca4f219e93ee8c2df06da36f1262ff6d35244a"
+  },
+  "evaluation_code_sha256": {
+    "01_HDSD_Preprocessing_Baseline.ipynb": "6e911aac1a2de88d26174c0b3b9caf524ce9b1844c5b2fe1c2c43f787cb23c84",
+    "02_HDSD_Full_FineTuning.ipynb": "6e911aac1a2de88d26174c0b3b9caf524ce9b1844c5b2fe1c2c43f787cb23c84",
+    "03_HDSD_PEFT_FineTuning.ipynb": "6e911aac1a2de88d26174c0b3b9caf524ce9b1844c5b2fe1c2c43f787cb23c84"
+  },
+  "private_manifest_sha256": "ab0acc16d98c3f0e979ed75fde88ea582b9e920ecc26e2863a5709a11ff92b6d",
+  "private_final_protocol_sha256": "d9d093570c3afbfc186e128894753ed7dd410a4ede8e14ecc262944341ff28c3",
+  "human_protocol_sha256": "9770ba9f590cfbe54c391989358ecaad86a6dfb6ecb614c20031f0fa2edfff6f",
+  "resolved_generation_config_sha256": "74a11c403ee4a6d5d1a1a8b0fa8ccd0aa1c5a204974864ddfa224b125138072e",
+  "aggregate_table_sha256": {
+    "results/model_summary.csv": "e563a23e5993359b62cde32e78286ba2b6ec8dede77af1bd6c607b1b6f842281",
+    "results/per_run.csv": "38dbb90376a18342dfcf69bb6c62a639180c8e5b1c32ca90d84e533213d594d9",
+    "results/paired_comparisons.csv": "e4d8345a12e495089d8a6c4fc2fa24b1e4ff0445658b6b07b42279d4c91b939f",
+    "results/efficiency.csv": "3b0289676adbfd6626f582e1401917f3a4ee1753ba867a34be6f984101f1a43a"
+  },
+  "private_inputs_note": "Recordings, annotations, manifests, per-recording predictions, checkpoints and the transcript-containing frozen protocol are excluded. Hashes identify the privately retained evidence."
+}

@@ -1,0 +1,4 @@
+# Preserve exact bytes for the published evidence hashes on every platform.
+hdsd_simple/** -text
+# The unchanged aggregate CSV exports use standard CRLF record endings.
+hdsd_simple/results/*.csv whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

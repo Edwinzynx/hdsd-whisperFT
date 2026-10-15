@@ -1,0 +1,8 @@
+mode,run,seed,trainable_parameters,recorded_adaptation_end_to_end_minutes,recorded_adaptation_peak_allocated_gib,selected_checkpoint_bytes,inference_seconds_447_recordings,checkpoint_scope
+pretrained,baseline_dev,,0,,,,139.5962268318981,pinned pretrained revision
+full,full_lr5e-06_seed42,42,240582912,6.580859472882002,4.606714725494385,972633406,143.38707193545997,full model
+full,full_lr5e-06_seed123,123,240582912,7.315090243921926,4.605501651763916,972633406,125.0266683716327,full model
+full,full_lr5e-06_seed2026,2026,240582912,7.280931295081973,4.602541446685791,972633406,126.43903899006546,full model
+lora,lora_lr5e-05_seed42,42,1769472,7.182138625780741,1.894299030303955,12737654,136.93762223795056,adapter requires pinned base model
+lora,lora_lr5e-05_seed123,123,1769472,7.356114702951163,1.8926453590393066,12737654,138.62217722088099,adapter requires pinned base model
+lora,lora_lr5e-05_seed2026,2026,1769472,7.262214547395706,1.8926453590393066,12737654,133.04424124769866,adapter requires pinned base model
